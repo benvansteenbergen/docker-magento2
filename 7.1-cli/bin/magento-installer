@@ -1,7 +1,8 @@
 #!/bin/bash
 
-[ "$DEBUG" = "true" ] && set -x
+[ "$DEBUG" = "true" ] && set -x #echo on
 
+NEW_CODE_INSTALL="false"
 AUTH_JSON_FILE="$(composer -g config data-dir 2>/dev/null)/auth.json"
 
 if [ -f "$AUTH_JSON_FILE" ]; then
@@ -12,8 +13,25 @@ fi
 
 MAGENTO_COMMAND="magento-command"
 
-if [ ! -f "$MAGENTO_ROOT/composer.json" ]; then
+if [ ! -z "$M2SETUP_INSTALL_REPOSITORY_URL" ]; then
+
+     if [ -z "$M2SETUP_INSTALL_BRANCH" ]; then
+        M2SETUP_INSTALL_BRANCH="master"
+     fi
+
+     git clone --single-branch -b $M2SETUP_INSTALL_BRANCH $M2SETUP_INSTALL_REPOSITORY_URL $MAGENTO_ROOT
+
+     if [ -f "$AUTH_JSON_FILE" ]; then
+             mkdir -p $MAGENTO_ROOT/var/composer_home
+             cp $AUTH_JSON_FILE $MAGENTO_ROOT/var/composer_home/auth.json
+     fi
+
+     composer install -d $MAGENTO_ROOT
+
+elif [ ! -f "$MAGENTO_ROOT/composer.json" ]; then
     echo "Creating Magento ($M2SETUP_VERSION) project from composer"
+
+    NEW_CODE_INSTALL="true"
 
     composer create-project \
         --repository-url=https://repo.magento.com/ \
@@ -35,7 +53,43 @@ fi
 
 chown -R www-data:www-data $MAGENTO_ROOT
 
-if [ ! "$M2SETUP_INSTALL_DB" = "false" ]; then
+if [ ! "$M2SETUP_INSTALL_EXISTING_DB" = "false" ]; then
+
+    CONFIGURE_COMMAND=`/usr/local/bin/magedbm2.phar configure \
+        -n \
+        --storage-adapter digitalocean-spaces`
+    CONFIGURE_COMMAND_2=`/usr/local/bin/magedbm2.phar configure \
+         -n --access-key $M2SETUP_MAGEDB_ACCESSKEY \
+         --secret-key $M2SETUP_MAGEDB_SECRETKEY \
+         --bucket $M2SETUP_MAGEDB_BUCKET \
+         --data-bucket $M2SETUP_MAGEDB_DATABUCKET \
+         --region $M2SETUP_MAGEDB_REGION \
+         --space $M2SETUP_MAGEDB_SPACE`
+    CONFIGURE_COMMAND_3=`/usr/local/bin/magedbm2.phar get $M2SETUP_MAGEDB_PROJECT_NAME \
+         -f --db-host $M2SETUP_DB_HOST \
+         --db-user $M2SETUP_DB_USER \
+	 --db-name $M2SETUP_DB_NAME \
+         --db-pass $M2SETUP_DB_PASSWORD`
+
+    cp /usr/local/env.php.template $MAGENTO_ROOT/app/etc/env.php
+
+    sudo sed -i "s/M2SETUP_DB_HOST/${M2SETUP_DB_HOST}/" $MAGENTO_ROOT/app/etc/env.php
+    sudo sed -i "s/M2SETUP_DB_NAME/${M2SETUP_DB_NAME}/" $MAGENTO_ROOT/app/etc/env.php
+    sudo sed -i "s/M2SETUP_DB_USER/${M2SETUP_DB_USER}/" $MAGENTO_ROOT/app/etc/env.php
+    sudo sed -i "s/M2SETUP_DB_PASSWORD/${M2SETUP_DB_PASSWORD}/" $MAGENTO_ROOT/app/etc/env.php
+
+    if [ "$NEW_CODE_INSTALL" = "true" ]; then
+         chown -R www-data:www-data $MAGENTO_ROOT/app/etc/
+	 [ ! -f "$MAGENTO_ROOT/app/etc/config.php" ] \
+         && $MAGENTO_COMMAND module:enable --all
+    fi
+
+    $MAGENTO_COMMAND setup:upgrade
+    $MAGENTO_COMMAND index:reindex
+    $MAGENTO_COMMAND setup:static-content:deploy $M2SETUP_INSTALL_LANGUAGES -f
+    $MAGENTO_COMMAND c:f
+
+elif [ ! "$M2SETUP_INSTALL_DB" = "false" ]; then
 
     echo "Install Magento"
 
@@ -70,8 +124,10 @@ if [ ! "$M2SETUP_INSTALL_DB" = "false" ]; then
     fi
 
     $INSTALL_COMMAND
+    $MAGENTO_COMMAND setup:upgrade
     $MAGENTO_COMMAND index:reindex
-    $MAGENTO_COMMAND setup:static-content:deploy
+    $MAGENTO_COMMAND setup:static-content:deploy $M2SETUP_INSTALL_LANGUAGES -f
+    $MAGENTO_COMMAND c:f
 
 else
     echo "Skipping DB installation"
@@ -87,7 +143,7 @@ echo "Fixing file permissions.."
 
 find $MAGENTO_ROOT/pub -type f -exec chmod 664 {} \;
 find $MAGENTO_ROOT/pub -type d -exec chmod 775 {} \;
-find $MAGENTO_ROOT/var/generation -type d -exec chmod g+s {} \;
+find $MAGENTO_ROOT/generation -type d -exec chmod g+s {} \;
 
 chown -R www-data:www-data $MAGENTO_ROOT
 

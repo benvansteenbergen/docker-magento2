@@ -84,7 +84,11 @@
       },
       "etc/mail.ini": {},
       "etc/php-cli.ini": {},
-      "etc/php-xdebug.ini": {}
+      "etc/php-xdebug.ini": {},
+      "etc/env.php.template": {
+        "_disable_variables": true,
+        "executable": false
+      }
     },
     "phpExtensions": ["mcrypt"],
     "xdebugVersion": "latest"
@@ -100,7 +104,11 @@
       "etc/mail.ini": {},
       "etc/php-fpm.ini": {},
       "etc/php-xdebug.ini": {},
-      "etc/php-fpm.conf": {}
+      "etc/php-fpm.conf": {},
+      "etc/env.php.template": {
+        "_disable_variables": true,
+        "executable": false
+      }
     },
     "phpExtensions": ["mcrypt"],
     "xdebugVersion": "latest"

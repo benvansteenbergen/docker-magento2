@@ -29,6 +29,15 @@ RUN docker-php-ext-configure \
 
 # Install required PHP extensions
 
+RUN { \
+  echo 'opcache.enable=1'; \
+  echo 'opcache.enable_cli=1'; \
+  echo 'opcache.interned_strings_buffer=16'; \
+  echo 'opcache.max_accelerated_files=10000'; \
+  echo 'opcache.memory_consumption=512'; \
+  echo 'opcache.validate_timestamps=1'; \
+  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
 RUN docker-php-ext-install \
   dom \ 
   gd \ 
@@ -39,6 +48,7 @@ RUN docker-php-ext-install \
   zip \ 
   soap \ 
   bcmath \ 
+  opcache \ 
   mcrypt
 
 # Install Xdebug (but don't enable)
@@ -53,6 +63,7 @@ ENV UPDATE_UID_GID false
 
 ADD etc/php-xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug-settings.ini
 ADD etc/mail.ini /usr/local/etc/php/conf.d/zz-mail.ini
+ADD etc/env.php.template /usr/local/env.php.template
 
 ADD docker-entrypoint.sh /docker-entrypoint.sh
 
@@ -78,7 +89,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN curl -O https://files.magerun.net/n98-magerun2.phar && chmod +x ./n98-magerun2.phar && mv ./n98-magerun2.phar /usr/local/bin/
 
 # Install magedbm2.phar and move to /usr/local/bin
-RUN curl -LO https://s3.eu-west-2.amazonaws.com/magedbm2-releases/magedbm2.phar && chmod +x ./magedbm2.phar && mv ./magedbm2.phar /usr/local/bin
+RUN curl -LO https://itonomy-backups.ams3.digitaloceanspaces.com/tools/releases/magedbm2.phar > magedbm2.phar && chmod +x ./magedbm2.phar && mv ./magedbm2.phar /usr/local/bin
 
 # Install mageconfigsync and move to /usr/local/bin
 RUN curl -L https://github.com/punkstar/mageconfigsync/releases/download/0.5.0-beta.1/mageconfigsync-0.5.0-beta.1.phar > mageconfigsync.phar && chmod +x ./mageconfigsync.phar && mv ./mageconfigsync.phar /usr/local/bin

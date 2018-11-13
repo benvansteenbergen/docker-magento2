@@ -39,9 +39,19 @@ RUN docker-php-ext-configure \
   'xsl',
   'zip',
   'soap',
-  'bcmath'
+  'bcmath',
+  'opcache',
 ], $imageSpecificPhpExtensions ?? []);
 ?>
+
+RUN { \
+  echo 'opcache.enable=1'; \
+  echo 'opcache.enable_cli=1'; \
+  echo 'opcache.interned_strings_buffer=16'; \
+  echo 'opcache.max_accelerated_files=10000'; \
+  echo 'opcache.memory_consumption=512'; \
+  echo 'opcache.validate_timestamps=1'; \
+  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 RUN docker-php-ext-install \
   <?php echo join(" \\ \n  ", $phpExtensions) ?>
@@ -60,6 +70,7 @@ ENV UPDATE_UID_GID false
 
 ADD etc/php-xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug-settings.ini
 ADD etc/mail.ini /usr/local/etc/php/conf.d/zz-mail.ini
+ADD etc/env.php.template /usr/local/env.php.template
 
 ADD docker-entrypoint.sh /docker-entrypoint.sh
 
