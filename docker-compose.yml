@@ -12,7 +12,7 @@ services:
       - "traefik.enabled=true"
       - "traefik.port=80"
       - "traefik.frontend.passHostHeader=true"
-      - "traefik.domain=docker-test.com"
+      - "traefik.domain=feature.itonomy.nl"
     networks:
       - "traefik_default"
   web:
