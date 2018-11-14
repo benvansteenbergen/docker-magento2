@@ -6,15 +6,17 @@ services:
       - VIRTUAL_HOST=magento2.docker
       - VIRTUAL_PORT=80
       - HTTPS_METHOD=noredirect
-    ports:
-      - 80:80
     links:
       - web
-
+    labels:
+      - "traefik.enabled=true"
+      - "traefik.port=80"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.domain=docker-test.com"
+    networks:
+      - "traefik_default"
   web:
     image: meanbee/magento2-nginx:1.9
-    ports:
-      - 80
     links:
       - fpm
       - db
@@ -22,6 +24,9 @@ services:
       - appdata
     env_file:
       - ./global.env
+    networks:
+      - "traefik_default"
+      - "default"
     #environment:
       #- VIRTUAL_HOST=magento2.docker
       #- VIRTUAL_PORT=80
@@ -29,7 +34,7 @@ services:
 
   fpm:
     hostname: fpm.magento2.docker
-    image: 5bbd3206e92e
+    image: 63bf3e270520
     ports:
       - 9000
     links:
@@ -38,6 +43,7 @@ services:
       - appdata
     env_file:
       - ./global.env
+
 
   db:
     image: mariadb:10
@@ -51,6 +57,7 @@ services:
       - MYSQL_USER=magento2
       - MYSQL_PASSWORD=magento2
       - TERM=meh
+
 
   cli:
     hostname: cli.magento2.docker
@@ -117,3 +124,9 @@ services:
     image: tianon/true
     volumes:
       - /var/lib/mysql
+
+
+networks:
+  traefik_default:
+    external:
+      name: traefik_default
