@@ -34,7 +34,7 @@ services:
 
   fpm:
     hostname: fpm.magento2.docker
-    image: 63bf3e270520
+    image: itonomy/magento2-php:7.1-fpm
     ports:
       - 9000
     links:
@@ -61,7 +61,7 @@ services:
 
   cli:
     hostname: cli.magento2.docker
-    image: 7678e89fecc2
+    image: itonomy/magento2-php:7.1-cli
     links:
       - db
     tty: true
@@ -100,7 +100,7 @@ services:
       # - M2SETUP_USE_SAMPLE_DATA=true
 
   cron:
-    image: meanbee/magento2-php:7.1-cli
+    image: itonomy/magento2-php:7.1-cli
     hostname: magento2-cron.docker
     command: run-cron
     env_file:
