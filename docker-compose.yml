@@ -75,7 +75,7 @@ services:
       # CLONE URL (external git repository, auth should be handled in global.env or in url itself)
       - M2SETUP_INSTALL_DB=false
       - M2SETUP_INSTALL_EXISTING_DB=true
-      - M2SETUP_INSTALL_BRANCH=feature/test-controller
+      - M2SETUP_INSTALL_BRANCH=
       - M2SETUP_INSTALL_LANGUAGES=nl_NL
       - M2SETUP_DB_HOST=db
       - M2SETUP_DB_NAME=magento
