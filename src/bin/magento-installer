@@ -58,14 +58,14 @@ if [ ! "$M2SETUP_INSTALL_EXISTING_DB" = "false" ]; then
     CONFIGURE_COMMAND=`/usr/local/bin/magedbm2.phar configure \
         -n \
         --storage-adapter digitalocean-spaces`
-    CONFIGURE_COMMAND_2=`/usr/local/bin/magedbm2.phar configure \
+        CONFIGURE_COMMAND_2=`/usr/local/bin/magedbm2.phar configure \
          -n --access-key $M2SETUP_MAGEDB_ACCESSKEY \
          --secret-key $M2SETUP_MAGEDB_SECRETKEY \
          --bucket $M2SETUP_MAGEDB_BUCKET \
          --data-bucket $M2SETUP_MAGEDB_DATABUCKET \
          --region $M2SETUP_MAGEDB_REGION \
          --space $M2SETUP_MAGEDB_SPACE`
-    CONFIGURE_COMMAND_3=`/usr/local/bin/magedbm2.phar get $M2SETUP_MAGEDB_PROJECT_NAME \
+        CONFIGURE_COMMAND_3=`/usr/local/bin/magedbm2.phar get $M2SETUP_MAGEDB_PROJECT_NAME \
          -f --db-host $M2SETUP_DB_HOST \
          --db-user $M2SETUP_DB_USER \
 	 --db-name $M2SETUP_DB_NAME \

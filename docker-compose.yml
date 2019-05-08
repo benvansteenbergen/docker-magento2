@@ -74,8 +74,8 @@ services:
       - ./composer.env
     environment:
       # MAGEDB CONFIGURATION
-      - M2SETUP_MAGEDB_BUCKET=test
-      - M2SETUP_MAGEDB_DATABUCKET=test2
+      - M2SETUP_MAGEDB_BUCKET=magento-demo
+      - M2SETUP_MAGEDB_DATABUCKET=magento-demo
       - M2SETUP_MAGEDB_REGION=ams3
       - M2SETUP_MAGEDB_SPACE=itonomy-backups
       # - M2SETUP_MAGEDB_PROJECT_NAME=
